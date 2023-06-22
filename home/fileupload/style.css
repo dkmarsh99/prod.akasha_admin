@@ -1,0 +1,21 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.form-container {
+    width: 100%;
+}
+
+.form-container form {
+    width: 80%;
+    margin: auto;
+}
+
+.form-container col-sm-2 {
+    text-align: center;
+}
+
+#error-alert, #success-alert {
+    display: none;
+}

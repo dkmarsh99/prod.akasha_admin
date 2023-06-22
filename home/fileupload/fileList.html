@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!--Bootstrap-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
+        crossorigin="anonymous"></script>
+
+    <!--JQuery-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!--Custom css file-->
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body class="container">
+    <div class="row" id="file-table">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">Document type</th>
+                    <th scope="col">Download link</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <script>
+        $(document).ready(function () {
+            // When page loads get files from sharepoint
+            getFileListFromSharepoint("Jon Doe"); // Jon Doe is hardcoded name to search files by
+        });
+
+        // Search for files containing name (ex. Jon Doe) and fill table
+        function getFileListFromSharepoint(name) {
+            $.ajax({
+                accepts: "aplication/json",
+                url: "getAllFileNames.php",
+                type: "get",
+                processData: false,
+                contentType: false,
+                data: {
+                    name: name
+                },
+                success: function (response) {
+                    console.log(response);
+                    response.fileNames.forEach(val => {
+                        const splittedFileName = val.split('-');
+                        if (name == splittedFileName[0]) {
+                            $("#file-table tbody").append('<tr><th scope = "row">' + splittedFileName[1].split('.')[0] + '</th><td id="defaultLink"><a href="" onclick="downloadFile(\'' + val + '\')">Download file</a></td></tr>');
+                        }
+                    })
+                }
+            });
+        }
+
+        function downloadFile(fileName) {
+            event.preventDefault();
+            console.log(fileName);
+
+            $.ajax({
+                accepts: "aplication/json",
+                url: 'downloadFile.php?fileName=' + fileName,
+                type: "get",
+                processData: false,
+                contentType: false,
+                data: {
+                    fileName: fileName
+                },
+                success: function (response) {
+                    console.log("Gotovo");
+                    window.location = 'downloadFile.php?fileName=' + fileName;
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

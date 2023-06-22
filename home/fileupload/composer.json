@@ -1,0 +1,6 @@
+{
+    "require": {
+        "vgrem/php-spo": "^2.4",
+        "thybag/php-sharepoint-lists-api": "dev-master"
+    }
+}

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!--Bootstrap-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
+        crossorigin="anonymous"></script>
+
+    <!--JQuery-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!--Custom css file-->
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <div class="form-container container">
+        <form action="/" id="file-form">
+            <div class="row">
+                <div class="col-sm-12">
+                    <label>Upload a new file:</label>
+                </div>
+				</div>
+				<div class="row">
+                <div class="col-sm-12">
+				<label>File Type</label>
+                    <select class="form-select" id="file-type">
+						<option selected value="2">Drivers licence - front</option> 
+   						<option value="5">Drivers licence - back</option> 
+						<option value="3">Passport</option>
+						
+                        <option value="1">Bank Statement</option>
+                        <option value="4">Other</option>  
+					</select>
+                </div>
+				</div>
+				<div class="row">
+						<div class="col-sm-12">		
+											
+						<label>Joint or person</label>						
+
+<?
+$phxclient_id = 242;
+
+include("../../php/configi.php");
+
+$queryclient="SELECT * FROM " . $phxclient_id . "_client where uid_client = ".$_COOKIE['whuid_client'];
+$resultclient=mysqli_query($conn, $queryclient);
+	while($rowclient=mysqli_fetch_array($resultclient)) {
+		$group_name = $rowclient["comp_name"];
+	}
+
+
+$queryp="SELECT * FROM " . $phxclient_id . "_client_contacts where uid_client = ".$_COOKIE['whuid_client']." and cc_order in (1,2) order by cc_order";
+
+//echo $queryp;
+
+$result231p=mysqli_query($conn, $queryp);
+
+$sp_ownership = 1;
+
+
+?>
+
+<select  class="form-select"  id = "sp_ownership" name="sp_ownership" style="width: 100%" >
+
+
+	<?php if ($sp_ownership ==  "0") {
+	?>
+
+		<option value="0" selected><?php echo "Joint"; ?></option>
+
+	<?php	
+	
+	}else{
+
+	?>
+
+		<option value="0"><?php echo "Joint"; ?></option>
+
+	<?php	
+	
+	}
+	
+	?>
+	
+
+	<?php
+	while($row231p=mysqli_fetch_array($result231p)) {
+	 ?>
+
+		<option <?php if ($sp_ownership ==  $row231p["con_uid"]) { echo " selected ";} ?> value="<? echo $row231p["con_uid"]; ?>"><? echo $row231p["first_name"]; ?></option>
+	 
+	 <?php
+	
+	}
+	 
+?>
+</select>
+
+</div>
+  </div>
+       </div>
+	   <div class="row">
+                <div class="col-sm-10">
+				<input  type="hidden"  id="ce_comp_name" value="<?php echo htmlspecialchars($group_name)?>">
+				<label>Select File</label>		
+                    <div class="mb-3">
+                        <input class="form-control" type="file" accept="image/*,.pdf" id="file">
+                    </div>
+            
+         
+
+            <div class="alert alert-success" role="alert" id="success-alert"></div>
+            <div class="alert alert-danger" role="alert" id="error-alert"></div>
+
+            <div class="row">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+			   </div>
+			       </div>
+        </form>
+    </div>
+
+    <script>
+        $("#file-form").submit(function (event) {
+            event.preventDefault();
+
+            let formData = new FormData();
+            formData.append('file', $('#file').prop('files')[0]);
+            formData.append('fileType', $("#file-type").val());
+            formData.append('documentName', $("#file-type option:selected").text());
+
+            // Hardcoded username as agreed
+			var e = document.getElementById("sp_ownership");
+			var strUser = e.options[e.selectedIndex].text;
+			
+			var ce_comp_name = document.getElementById("ce_comp_name").value;
+
+			var strUser = ce_comp_name +"-"+strUser;
+
+            formData.append('name', strUser);
+
+            $.ajax({
+                accepts: "aplication/json",
+                url: "uploadFileToSharepoint.php",
+                type: "post",
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: function (response) {
+				
+				alert (response);
+                    console.log(response);
+                    if (response.isSuccess === true) {
+                        let successAlert = $("#success-alert");
+                        successAlert.css("display", "block");
+                        successAlert.html("<p>" + response.message + "</p>");
+                    } else {
+                        let errorAlert = $("#error-alert").css("display", "none");
+                        errorAlert.css("display", "block");
+                        errorAlert.html("<p> Error message: " + response.message + "</p>");
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    let errorAlert = $("#error-alert").css("display", "none");
+                    errorAlert.css("display", "block");
+                    errorAlert.html("<p>Unexpected error occuerd</p>");
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
